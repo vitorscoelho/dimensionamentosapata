@@ -40,15 +40,15 @@ class FlexaoCompostaEstadio2Test {
 
         val secaoCA = SecaoCA(secaoConcreto = secaoConcreto, secaoAco = secaoAco)
 
-        val momentoX = -58330.0 + (-1100.0) * (60.0 - 80.0)
-        val solicitacao1 = Esforco(normal = -1100.0, momentoX = momentoX, momentoY = -16670.0)
-        val solicitacao2 = Esforco(normal = -1100.0, momentoX = momentoX, momentoY = 16670.0)
+        val pontoEsforcoNormal = Ponto(x = 50.0, y = 60.0)
+        val solicitacao1 = Esforco(normal = 1100.0, momentoX = -58330.0, momentoY = 16670.0)
+        val solicitacao2 = Esforco(normal = 1100.0, momentoX = -58330.0, momentoY = -16670.0)
 
         val tolerancia = 0.00001
         val criterios = CriteriosProcessoIterativo(
             deformadaInicial = Deformada.criar(
                 ponto = secaoConcreto.cg,
-                deformacaoPonto = -1.0 / 1000.0,
+                deformacaoPonto = 1.0 / 1000.0,
                 curvaturaX = 0.0,
                 curvaturaY = 0.0
             ),
@@ -68,7 +68,7 @@ class FlexaoCompostaEstadio2Test {
             //Considerando o concreto nos lugares onde tem barra de aço
             val flexaoComposta = FlexaoCompostaEstadio2(
                 secaoCA = secaoCA,
-                pontoEsforcoNormal = secaoConcreto.cg,
+                pontoEsforcoNormal = pontoEsforcoNormal,
                 desconsiderarConcretoNasArmaduras = false,
                 criteriosProcessoIterativo = criterios
             )
@@ -78,46 +78,46 @@ class FlexaoCompostaEstadio2Test {
 
             assertEquals(0.0, resultados1.tensaoConcreto(p1), DELTA)
             assertEquals(0.0, resultados1.tensaoConcreto(p2), DELTA)
-            assertEquals(-0.472370216, resultados1.tensaoConcreto(p3), DELTA)
-            assertEquals(-0.844635734, resultados1.tensaoConcreto(p4), DELTA)
-            assertEquals(-1.043779558, resultados1.tensaoConcreto(p5), DELTA)
-            assertEquals(-0.113115762, resultados1.tensaoConcreto(p6), DELTA)
+            assertEquals(0.472370216, resultados1.tensaoConcreto(p3), DELTA)
+            assertEquals(0.844635734, resultados1.tensaoConcreto(p4), DELTA)
+            assertEquals(1.043779558, resultados1.tensaoConcreto(p5), DELTA)
+            assertEquals(0.113115762, resultados1.tensaoConcreto(p6), DELTA)
             assertEquals(0.0, resultados1.tensaoConcreto(p7), DELTA)
-            assertEquals(-0.286237457, resultados1.tensaoConcreto(p8), DELTA)
+            assertEquals(0.286237457, resultados1.tensaoConcreto(p8), DELTA)
 
-            assertEquals(6.131625162, resultados1.tensaoAco(b1), DELTA)
-            assertEquals(-0.102910841, resultados1.tensaoAco(b2), DELTA)
-            assertEquals(-1.098629959, resultados1.tensaoAco(b3), DELTA)
-            assertEquals(-4.821285143, resultados1.tensaoAco(b4), DELTA)
-            assertEquals(5.200961366, resultados1.tensaoAco(b5), DELTA)
-            assertEquals(-8.478885003, resultados1.tensaoAco(b6), DELTA)
-            assertEquals(-9.474604122, resultados1.tensaoAco(b7), DELTA)
-            assertEquals(-5.751948939, resultados1.tensaoAco(b8), DELTA)
+            assertEquals(-6.131625162, resultados1.tensaoAco(b1), DELTA)
+            assertEquals(0.102910841, resultados1.tensaoAco(b2), DELTA)
+            assertEquals(1.098629959, resultados1.tensaoAco(b3), DELTA)
+            assertEquals(4.821285143, resultados1.tensaoAco(b4), DELTA)
+            assertEquals(-5.200961366, resultados1.tensaoAco(b5), DELTA)
+            assertEquals(8.478885003, resultados1.tensaoAco(b6), DELTA)
+            assertEquals(9.474604122, resultados1.tensaoAco(b7), DELTA)
+            assertEquals(5.751948939, resultados1.tensaoAco(b8), DELTA)
 
             assertEquals(0.0, resultados2.tensaoConcreto(p1), DELTA)
             assertEquals(0.0, resultados2.tensaoConcreto(p2), DELTA)
-            assertEquals(-0.286237457, resultados2.tensaoConcreto(p3), DELTA)
+            assertEquals(0.286237457, resultados2.tensaoConcreto(p3), DELTA)
             assertEquals(0.0, resultados2.tensaoConcreto(p4), DELTA)
-            assertEquals(-0.113115762, resultados2.tensaoConcreto(p5), DELTA)
-            assertEquals(-1.043779558, resultados2.tensaoConcreto(p6), DELTA)
-            assertEquals(-0.844635734, resultados2.tensaoConcreto(p7), DELTA)
-            assertEquals(-0.472370216, resultados2.tensaoConcreto(p8), DELTA)
+            assertEquals(0.113115762, resultados2.tensaoConcreto(p5), DELTA)
+            assertEquals(1.043779558, resultados2.tensaoConcreto(p6), DELTA)
+            assertEquals(0.844635734, resultados2.tensaoConcreto(p7), DELTA)
+            assertEquals(0.472370216, resultados2.tensaoConcreto(p8), DELTA)
 
-            assertEquals(5.200961356, resultados2.tensaoAco(b1), DELTA)
-            assertEquals(-8.478885004, resultados2.tensaoAco(b2), DELTA)
-            assertEquals(-9.474604122, resultados2.tensaoAco(b3), DELTA)
-            assertEquals(-5.751948938, resultados2.tensaoAco(b4), DELTA)
-            assertEquals(6.131625152, resultados2.tensaoAco(b5), DELTA)
-            assertEquals(-0.102910842, resultados2.tensaoAco(b6), DELTA)
-            assertEquals(-1.098629959, resultados2.tensaoAco(b7), DELTA)
-            assertEquals(-4.821285143, resultados2.tensaoAco(b8), DELTA)
+            assertEquals(-5.200961356, resultados2.tensaoAco(b1), DELTA)
+            assertEquals(8.478885004, resultados2.tensaoAco(b2), DELTA)
+            assertEquals(9.474604122, resultados2.tensaoAco(b3), DELTA)
+            assertEquals(5.751948938, resultados2.tensaoAco(b4), DELTA)
+            assertEquals(-6.131625152, resultados2.tensaoAco(b5), DELTA)
+            assertEquals(0.102910842, resultados2.tensaoAco(b6), DELTA)
+            assertEquals(1.098629959, resultados2.tensaoAco(b7), DELTA)
+            assertEquals(4.821285143, resultados2.tensaoAco(b8), DELTA)
         }
 
         run {
             //Desconsiderando o concreto nos lugares onde tem barra de aço
             val flexaoComposta = FlexaoCompostaEstadio2(
                 secaoCA = secaoCA,
-                pontoEsforcoNormal = secaoConcreto.cg,
+                pontoEsforcoNormal = pontoEsforcoNormal,
                 desconsiderarConcretoNasArmaduras = true,
                 criteriosProcessoIterativo = criterios
             )
@@ -127,41 +127,39 @@ class FlexaoCompostaEstadio2Test {
 
             assertEquals(0.0, resultados1.tensaoConcreto(p1), DELTA)
             assertEquals(0.0, resultados1.tensaoConcreto(p2), DELTA)
-            assertEquals(-0.474646124, resultados1.tensaoConcreto(p3), DELTA)
-            assertEquals(-0.849075539, resultados1.tensaoConcreto(p4), DELTA)
-            assertEquals(-1.049127697, resultados1.tensaoConcreto(p5), DELTA)
-            assertEquals(-0.113054159, resultados1.tensaoConcreto(p6), DELTA)
+            assertEquals(0.474646124, resultados1.tensaoConcreto(p3), DELTA)
+            assertEquals(0.849075539, resultados1.tensaoConcreto(p4), DELTA)
+            assertEquals(1.049127697, resultados1.tensaoConcreto(p5), DELTA)
+            assertEquals(0.113054159, resultados1.tensaoConcreto(p6), DELTA)
             assertEquals(0.0, resultados1.tensaoConcreto(p7), DELTA)
-            assertEquals(-0.287431416, resultados1.tensaoConcreto(p8), DELTA)
+            assertEquals(0.287431416, resultados1.tensaoConcreto(p8), DELTA)
 
-            assertEquals(6.160126582, resultados1.tensaoAco(b1), DELTA)
-            assertEquals(-0.098187175, resultados1.tensaoAco(b2), DELTA)
-            assertEquals(-1.098447966, resultados1.tensaoAco(b3), DELTA)
-            assertEquals(-4.842742118, resultados1.tensaoAco(b4), DELTA)
-            assertEquals(5.224053044, resultados1.tensaoAco(b5), DELTA)
-            assertEquals(-8.522849018, resultados1.tensaoAco(b6), DELTA)
-            assertEquals(-9.523109809, resultados1.tensaoAco(b7), DELTA)
-            assertEquals(-5.778815656, resultados1.tensaoAco(b8), DELTA)
+            assertEquals(-6.160126582, resultados1.tensaoAco(b1), DELTA)
+            assertEquals(0.098187175, resultados1.tensaoAco(b2), DELTA)
+            assertEquals(1.098447966, resultados1.tensaoAco(b3), DELTA)
+            assertEquals(4.842742118, resultados1.tensaoAco(b4), DELTA)
+            assertEquals(-5.224053044, resultados1.tensaoAco(b5), DELTA)
+            assertEquals(8.522849018, resultados1.tensaoAco(b6), DELTA)
+            assertEquals(9.523109809, resultados1.tensaoAco(b7), DELTA)
+            assertEquals(5.778815656, resultados1.tensaoAco(b8), DELTA)
 
             assertEquals(0.0, resultados2.tensaoConcreto(p1), DELTA)
             assertEquals(0.0, resultados2.tensaoConcreto(p2), DELTA)
-            assertEquals(-0.287431416, resultados2.tensaoConcreto(p3), DELTA)
+            assertEquals(0.287431416, resultados2.tensaoConcreto(p3), DELTA)
             assertEquals(0.0, resultados2.tensaoConcreto(p4), DELTA)
-            assertEquals(-0.113054159, resultados2.tensaoConcreto(p5), DELTA)
-            assertEquals(-1.049127697, resultados2.tensaoConcreto(p6), DELTA)
-            assertEquals(-0.849075539, resultados2.tensaoConcreto(p7), DELTA)
-            assertEquals(-0.474646124, resultados2.tensaoConcreto(p8), DELTA)
+            assertEquals(0.113054159, resultados2.tensaoConcreto(p5), DELTA)
+            assertEquals(1.049127697, resultados2.tensaoConcreto(p6), DELTA)
+            assertEquals(0.849075539, resultados2.tensaoConcreto(p7), DELTA)
+            assertEquals(0.474646124, resultados2.tensaoConcreto(p8), DELTA)
 
-            assertEquals(5.224053034, resultados2.tensaoAco(b1), DELTA)
-            assertEquals(-8.522849018, resultados2.tensaoAco(b2), DELTA)
-            assertEquals(-9.523109808, resultados2.tensaoAco(b3), DELTA)
-            assertEquals(-5.778815656, resultados2.tensaoAco(b4), DELTA)
-            assertEquals(6.160126572, resultados2.tensaoAco(b5), DELTA)
-            assertEquals(-0.098187176, resultados2.tensaoAco(b6), DELTA)
-            assertEquals(-1.098447966, resultados2.tensaoAco(b7), DELTA)
-            assertEquals(-4.842742118, resultados2.tensaoAco(b8), DELTA)
-
-
+            assertEquals(-5.224053034, resultados2.tensaoAco(b1), DELTA)
+            assertEquals(8.522849018, resultados2.tensaoAco(b2), DELTA)
+            assertEquals(9.523109808, resultados2.tensaoAco(b3), DELTA)
+            assertEquals(5.778815656, resultados2.tensaoAco(b4), DELTA)
+            assertEquals(-6.160126572, resultados2.tensaoAco(b5), DELTA)
+            assertEquals(0.098187176, resultados2.tensaoAco(b6), DELTA)
+            assertEquals(1.098447966, resultados2.tensaoAco(b7), DELTA)
+            assertEquals(4.842742118, resultados2.tensaoAco(b8), DELTA)
         }
     }
 }

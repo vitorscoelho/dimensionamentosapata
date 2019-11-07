@@ -31,13 +31,14 @@ internal class ControllerInicial : Controller() {
             model.commit()
             val multiplicadorModuloReacao = 1 / 1000.0
             val multiplicadorMomento = 100.0
+            val multiplicadorTensao = 10_000.0
             val sapata = SapataRetangular(
                 lx = lx, ly = ly, moduloReacaoSolo = moduloReacaoSolo * multiplicadorModuloReacao
             )
             val criteriosProcessoIterativo = CriteriosProcessoIterativo(
                 deformadaInicial = Deformada.criar(
                     ponto = Ponto.ZERO,
-                    deformacaoPonto = -ecgInicial,
+                    deformacaoPonto = ecgInicial,
                     curvaturaX = curvaturaXInicial,
                     curvaturaY = curvaturaYInicial
                 ),
@@ -47,9 +48,9 @@ internal class ControllerInicial : Controller() {
                 deltaMyAdm = toleranciaIteracao * multiplicadorMomento
             )
             val esforco = Esforco(
-                normal = -normal,
+                normal = normal,
                 momentoX = momentoX * multiplicadorMomento,
-                momentoY = -momentoY * multiplicadorMomento
+                momentoY = momentoY * multiplicadorMomento
             )
             println(sapata)
             println(criteriosProcessoIterativo)
@@ -62,28 +63,39 @@ internal class ControllerInicial : Controller() {
                 val curvaturaX = resultados.deformada.curvaturaX
                 val curvaturaY = resultados.deformada.curvaturaY
                 val curvaturaResultante = sqrt(curvaturaX * curvaturaX + curvaturaY * curvaturaY)
-                val tensaoMaxima = resultados.tensaoMaxima
+                val tensaoMinima = resultados.tensaoMinima / multiplicadorTensao
+                val tensaoMaxima = resultados.tensaoMaxima / multiplicadorTensao
                 val areaSapata = sapata.area
                 val moduloFlexaoXSapata = sapata.moduloFlexaoX
                 val moduloFlexaoYSapata = sapata.moduloFlexaoY
                 val areaComprimida = resultados.areaSecaoComprimida
                 val porcentagemAreaComprimida = 100.0 * areaComprimida / areaSapata
+                val normal = esforco.normal
+                val momentoX = esforco.momentoX / multiplicadorMomento
+                val momentoY = esforco.momentoY / multiplicadorMomento
                 textoResultados = run {
                     val sb = StringBuilder()
                     sb.append("- Resultados da análise\r\n")
                     if (utilizarModuloReacaoSolo) {
-                        sb.append("   Δcg= ${dc2Casas.format(-deformacaoCG)} cm\r\n")
+                        sb.append("   Δcg= ${dc2Casas.format(deformacaoCG)} cm\r\n")
                         sb.append("   Φx= ${dcCientifica3Casas.format(curvaturaX)} rad\r\n")
                         sb.append("   Φy= ${dcCientifica3Casas.format(curvaturaY)} rad\r\n")
                         sb.append("   Φ= ${dcCientifica3Casas.format(curvaturaResultante)} rad\r\n")
                     }
-                    sb.append("   σMáx= ${dc2Casas.format(-tensaoMaxima * 10_000)} kPa\r\n")
+                    sb.append("   σMín= ${dc2Casas.format(tensaoMinima)} kPa\r\n")
+                    sb.append("   σMáx= ${dc2Casas.format(tensaoMaxima)} kPa\r\n")
                     sb.append("   Área comprimida= ${dc2Casas.format(areaComprimida)} cm²\r\n")
                     sb.append("   Área comprimida= ${dc1Casa.format(porcentagemAreaComprimida)} %\r\n")
                     sb.append("\r\n- Geometria da Sapata\r\n")
                     sb.append("   Área= ${dc2Casas.format(areaSapata)} cm²\r\n")
                     sb.append("   Wx= ${dc2Casas.format(moduloFlexaoXSapata)} cm³\r\n")
-                    sb.append("   Wy= ${dc2Casas.format(moduloFlexaoYSapata)} cm³")
+                    sb.append("   Wy= ${dc2Casas.format(moduloFlexaoYSapata)} cm³\r\n")
+                    sb.append("\r\n- Esforços\r\n")
+                    sb.append("   N= ${dc2Casas.format(normal)} kN\r\n")
+                    sb.append("   Mx= ${dc2Casas.format(momentoX)} kN.m\r\n")
+                    sb.append("   My= ${dc2Casas.format(momentoY)} kN.m\r\n")
+                    sb.append("   ex= ${dc2Casas.format(100.0 * momentoY / normal)} cm\r\n")
+                    sb.append("   ey= ${dc2Casas.format(100.0 * momentoX / normal)} cm")
                     sb.toString()
                 }
                 canvasSapata.resultados = resultados

@@ -179,9 +179,9 @@ internal class CanvasSapata(val controller: ControllerInicial) {
                     val deformacao = resultados!!.deformacao(x = x, y = y)
                     controller.textoXMouseProperty.value = "X= ${dc1Casa.format(x)} cm"
                     controller.textoYMouseProperty.value = "Y= ${dc1Casa.format(y)} cm"
-                    controller.textoTensaoProperty.value = "Tensão= ${dc2Casas.format(-tensao * 10_000)} kPa"
+                    controller.textoTensaoProperty.value = "Tensão= ${dc2Casas.format(tensao * 10_000)} kPa"
                     if (controller.model.utilizarModuloReacaoSolo.value) {
-                        controller.textoDeformacaoProperty.value = "Deformação= ${dc2Casas.format(-deformacao)} cm"
+                        controller.textoDeformacaoProperty.value = "Deformação= ${dc2Casas.format(deformacao)} cm"
                     } else {
                         controller.textoDeformacaoProperty.value = ""
                     }

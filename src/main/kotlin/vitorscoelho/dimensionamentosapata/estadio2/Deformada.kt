@@ -2,9 +2,9 @@ package vitorscoelho.dimensionamentosapata.estadio2
 
 /**
  * Representa uma regra que é capaz de determinar a deformação em qualquer ponto do plano cartesiano
- * @property deformacaoZero deformação específica na origem do plano cartesiano (convencionada positiva se for um alongamento)
- * @property curvaturaX é a curvatura da barra em torno do eixo baricêntrico X (convencionada positiva quando produzir alongamentos no primeiro quadrante da seção)
- * @property curvaturaY é a curvatura da barra em torno do eixo baricêntrico Y (convencionada positiva quando produzir alongamentos no primeiro quadrante da seção)
+ * @property deformacaoZero deformação específica na origem do plano cartesiano (convencionada positiva se for um encurtamento)
+ * @property curvaturaX é a curvatura da barra em torno do eixo baricêntrico X (convencionada positiva quando o vetor aponta para a "direita")
+ * @property curvaturaY é a curvatura da barra em torno do eixo baricêntrico Y (convencionada positiva quando o vetor aponta para "cima")
  */
 class Deformada private constructor(
     private val deformacaoZero: Double, val curvaturaX: Double, val curvaturaY: Double
@@ -20,7 +20,7 @@ class Deformada private constructor(
      * @param x a abscissa do ponto que se deseja saber a deformação específica
      * @param y a ordenada do ponto que se deseja saber a deformação específica
      */
-    fun deformacao(x: Double, y: Double): Double = deformacaoZero + curvaturaX * y + curvaturaY * x
+    fun deformacao(x: Double, y: Double): Double = deformacaoZero - curvaturaX * y + curvaturaY * x
 
     override fun toString(): String = "{e0: $deformacaoZero, curvaturaX: $curvaturaX, curvaturaY: $curvaturaY}"
 
@@ -33,7 +33,7 @@ class Deformada private constructor(
          * @param curvaturaY curvatura da seção em torno do eixo baricêntrico Y
          */
         fun criar(ponto: Ponto, deformacaoPonto: Double, curvaturaX: Double, curvaturaY: Double): Deformada {
-            val deformacaoZero = deformacaoPonto - curvaturaX * ponto.y - curvaturaY * ponto.x
+            val deformacaoZero = deformacaoPonto + curvaturaX * ponto.y - curvaturaY * ponto.x
             return Deformada(deformacaoZero = deformacaoZero, curvaturaX = curvaturaX, curvaturaY = curvaturaY)
         }
     }

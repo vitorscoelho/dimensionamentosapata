@@ -34,14 +34,16 @@ class FlexaoCompostaEstadio2(
      * Retorna uma lista com as deformadas de cada uma das iterações adotadas até que fosse encontrado o equilíbrio
      */
     private fun deformadas(esforco: Esforco): List<Deformada> {
-        /**Esforco considerando a origem (0, 0) como referência, ao invés do [pontoEsforcoNormal]*/
-        val esforcoTransformado = Esforco(
-            normal = esforco.normal,
-            momentoX = esforco.momentoX + esforco.normal * pontoEsforcoNormal.y,
-            momentoY = esforco.momentoY + esforco.normal * pontoEsforcoNormal.x
-        )
+        /**
+         * Esforco considerando a origem (0, 0) como referência, ao invés do [pontoEsforcoNormal].
+         * Inverte o sinal do esforço normal para que fique igual ao da dissertação.
+         * Transforma o eixo y também para que o sistema de coordenadas fique igual ao da dissertação.
+         */
+        val normal = -esforco.normal
+        val momentoX = esforco.momentoX + normal * pontoEsforcoNormal.y
+        val momentoY = -esforco.momentoY + normal * pontoEsforcoNormal.x
 
-        val vetorEsforcoSolicitante = esforcoTransformado.toVetorColuna()
+        val vetorEsforcoSolicitante = Matriz.vetorColuna(normal, momentoX, momentoY)
         var qtdIteracoes = 0
         var deformada = criteriosProcessoIterativo.deformadaInicial
         var vetorDeformacao = deformada.toVetorColuna()
@@ -74,12 +76,12 @@ class FlexaoCompostaEstadio2(
      * 2 - Curvatura em torno do eixo Y
      */
     private fun Deformada.toVetorColuna(): Matriz = Matriz.vetorColuna(
-        deformacao(posicao = Ponto.ZERO), curvaturaX, curvaturaY
+        -deformacao(posicao = Ponto.ZERO), curvaturaX, -curvaturaY
     )
 
     private fun deformada(vetorColuna: Matriz): Deformada = Deformada.criar(
-        ponto = Ponto.ZERO, deformacaoPonto = vetorColuna.get(0, 0),
-        curvaturaX = vetorColuna.get(1, 0), curvaturaY = vetorColuna.get(2, 0)
+        ponto = Ponto.ZERO, deformacaoPonto = -vetorColuna.get(0, 0),
+        curvaturaX = vetorColuna.get(1, 0), curvaturaY = -vetorColuna.get(2, 0)
     )
 
     private fun converge(vetorDelta: Matriz): Boolean {
@@ -113,7 +115,7 @@ class FlexaoCompostaEstadio2(
         val pontosSecaoComprimida = mutableListOf<Ponto>()
         secaoCA.secaoConcreto.arestas.forEach { aresta ->
             val deformacaoPontoInicial = deformada.deformacao(aresta.pontoInicial)
-            if (deformacaoPontoInicial <= 0.0) {
+            if (deformacaoPontoInicial >= 0.0) {
                 pontosSecaoComprimida += aresta.pontoInicial
             }
 
@@ -158,7 +160,7 @@ class FlexaoCompostaEstadio2(
 
     private fun matrizGeometricaAcoDesconsiderandoConcretoNasArmaduras(deformada: Deformada): Matriz {
         val (barrasComprimidas, barrasTracionadas) = this.secaoCA.secaoAco.barras.partition { barra ->
-            deformada.deformacao(barra.cg) < 0.0
+            deformada.deformacao(barra.cg) > 0.0
         }
         val moduloDeformacaoBarrasComprimidas =
             secaoCA.secaoAco.moduloDeformacao - secaoCA.secaoConcreto.moduloDeformacao
@@ -207,7 +209,7 @@ class ResultadosFlexaoCompostaEstadio2(
 
     fun tensaoConcreto(x: Double, y: Double): Double {
         val deformacao = deformacao(x = x, y = y)
-        if (deformacao >= 0.0) return 0.0
+        if (deformacao <= 0.0) return 0.0
         return moduloDeformacaoConcreto * deformacao
     }
 

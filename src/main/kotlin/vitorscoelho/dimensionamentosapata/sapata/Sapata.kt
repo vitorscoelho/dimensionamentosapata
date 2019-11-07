@@ -1,6 +1,7 @@
 package vitorscoelho.dimensionamentosapata.sapata
 
 import vitorscoelho.dimensionamentosapata.estadio2.*
+import kotlin.math.max
 import kotlin.math.pow
 
 class ResultadosFlexaoSapata internal constructor(private val resultados: ResultadosFlexaoCompostaEstadio2) {
@@ -22,7 +23,8 @@ class ResultadosFlexaoSapata internal constructor(private val resultados: Result
     val deformada: Deformada
         get() = resultados.deformadaFinal
 
-    val tensaoMaxima: Double by lazy { verticesSapata.map { tensaoSolo(it.x, it.y) }.min()!! }
+    val tensaoMaxima: Double by lazy { verticesSapata.map { tensaoSolo(it.x, it.y) }.max()!! }
+    val tensaoMinima: Double by lazy { max(0.0, verticesSapata.map { tensaoSolo(it.x, it.y) }.min()!!) }
 
     fun tensaoSolo(x: Double, y: Double) = resultados.tensaoConcreto(x, y)
     fun deformacao(x: Double, y: Double) = resultados.deformacao(x, y)
