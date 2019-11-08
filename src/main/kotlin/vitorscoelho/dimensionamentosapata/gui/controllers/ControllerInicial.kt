@@ -31,7 +31,7 @@ internal class ControllerInicial : Controller() {
             model.commit()
             val multiplicadorModuloReacao = 1 / 1000.0
             val multiplicadorMomento = 100.0
-            val multiplicadorTensao = 10_000.0
+            val multiplicadorTensao = 1.0 / 10_000.0
             val sapata = SapataRetangular(
                 lx = lx, ly = ly, moduloReacaoSolo = moduloReacaoSolo * multiplicadorModuloReacao
             )

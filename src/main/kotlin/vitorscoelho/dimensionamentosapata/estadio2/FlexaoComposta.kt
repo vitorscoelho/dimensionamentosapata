@@ -27,7 +27,7 @@ class FlexaoCompostaEstadio2(
     private val matrizGeometricaAcoConsiderandoConcretoNasArmaduras: Matriz by lazy { matrizGeometricaAcoConsiderandoConcretoNasArmaduras() }
 
     fun resultados(esforco: Esforco) = ResultadosFlexaoCompostaEstadio2(
-        flexaoCompostaEstadio2 = this, deformadas = deformadas(esforco = esforco)
+        flexaoCompostaEstadio2 = this, deformadas = deformadas(esforco = esforco), esforcoSolicitante = esforco
     )
 
     /**
@@ -194,6 +194,7 @@ class FlexaoCompostaEstadio2(
 
 class ResultadosFlexaoCompostaEstadio2(
     val flexaoCompostaEstadio2: FlexaoCompostaEstadio2,
+    val esforcoSolicitante: Esforco,
     val deformadas: List<Deformada>
 ) {
     val deformadaFinal: Deformada

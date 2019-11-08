@@ -29,9 +29,6 @@ internal class ContextoDeValidacao {
     }
 }
 
-private fun TextField.inputInteiro() = filterInput { it.controlNewText.isInt() }
-private fun TextField.inputReal() = filterInput { it.controlNewText.isDouble() }
-
 internal fun TextField.numeroInteiro(
     property: Property<Number>,
     descricao: String,
@@ -112,22 +109,11 @@ private fun TextField.configuracoesIniciais(
     bind(property = property, converter = stringConverterTextField)
     //Adicionando o validator no ValidatorContext. Teve que fazer com o validator sem mensagem de erro porque o procedimento padrão
     //do TornadoFX faz com que o tooltip com a descrição fique desconfigurado
+    val msgErroComAvisoValorInvalido = "Valor inválido!\r\n$msgErro"
+    adicionarTooltip(valido = true, descricao = descricao, msgErro = msgErroComAvisoValorInvalido)
     val validator = contextoDeValidacao.addValidator(this) { predicate.invoke() }
-    //Configurando o Tooltip
-    val tooltip = Tooltip(descricao)
-    alterarDelayTime(tooltip)
-    setTooltip(tooltip)
-    tooltip.addClass(EstiloPrincipal.tooltipDescricao)
     validator.valid.onChange { valido ->
-        if (valido) {
-            tooltip.text = descricao
-            tooltip.removeClass(EstiloPrincipal.tooltipErro)
-            tooltip.addClass(EstiloPrincipal.tooltipDescricao)
-        } else {
-            tooltip.text = msgErro
-            tooltip.removeClass(EstiloPrincipal.tooltipDescricao)
-            tooltip.addClass(EstiloPrincipal.tooltipErro)
-        }
+        adicionarTooltip(valido = valido, descricao = descricao, msgErro = msgErroComAvisoValorInvalido)
     }
 }
 
@@ -142,6 +128,22 @@ private val stringConverterTextField: StringConverter<Number> = object : StringC
     override fun fromString(valor: String?): Double? {
         if (valor == null) return 0.0
         return valor.toDouble()
+    }
+}
+
+private fun TextField.adicionarTooltip(valido: Boolean, descricao: String, msgErro: String) {
+    //Configurando o Tooltip
+    //Tive que criar um novo tooltip ao invés de só mudar o estilo (quando a msgErro deveria ser mostrada, porque a classe do css não estava alternando. BUG?
+    val tooltip = Tooltip(descricao)
+    alterarDelayTime(tooltip)
+    setTooltip(tooltip)
+    tooltip.text = if (valido) descricao else msgErro
+    if (valido) {
+        tooltip.text = descricao
+        tooltip.addClass(EstiloPrincipal.tooltipDescricao)
+    } else {
+        tooltip.text = msgErro
+        tooltip.addClass(EstiloPrincipal.tooltipErro)
     }
 }
 

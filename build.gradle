@@ -28,6 +28,18 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
+task fatJar(type: Jar) {
+    group 'build'
+    description 'Cria o jar da aplicação com todas as dependências'
+    manifest {
+        attributes 'Main-Class': "vitorscoelho.dimensionamentosapata.gui.MainKt"
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
+}
+
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }

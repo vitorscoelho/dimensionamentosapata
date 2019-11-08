@@ -23,8 +23,15 @@ class ResultadosFlexaoSapata internal constructor(private val resultados: Result
     val deformada: Deformada
         get() = resultados.deformadaFinal
 
-    val tensaoMaxima: Double by lazy { verticesSapata.map { tensaoSolo(it.x, it.y) }.max()!! }
-    val tensaoMinima: Double by lazy { max(0.0, verticesSapata.map { tensaoSolo(it.x, it.y) }.min()!!) }
+    val esforcoSolicitante: Esforco
+        get() = resultados.esforcoSolicitante
+
+    val tensaoMaxima: Double by lazy {
+        val valor=verticesSapata.map { tensaoSolo(it.x, it.y) }.max()!!
+        println(valor)
+        valor
+    }
+    val tensaoMinima: Double by lazy { verticesSapata.map { tensaoSolo(it.x, it.y) }.min()!! }
 
     fun tensaoSolo(x: Double, y: Double) = resultados.tensaoConcreto(x, y)
     fun deformacao(x: Double, y: Double) = resultados.deformacao(x, y)
