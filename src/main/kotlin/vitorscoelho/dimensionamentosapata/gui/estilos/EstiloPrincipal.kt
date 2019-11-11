@@ -8,6 +8,7 @@ import tornadofx.*
 internal class EstiloPrincipal : Stylesheet() {
     private val fonteRegular = loadFont("/vitorscoelho/dimensionamentosapata/gui/fontes/Ubuntu-Regular.ttf", 15)!!
     private val fonteNegrito = loadFont("/vitorscoelho/dimensionamentosapata/gui/fontes/Ubuntu-Bold.ttf", 15)!!
+    private val fonteLight = loadFont("/vitorscoelho/dimensionamentosapata/gui/fontes/Ubuntu-Light.ttf", 15)!! //Usada no desenho do Canvas
 
     init {
         val fontSizePadrao = 13.px

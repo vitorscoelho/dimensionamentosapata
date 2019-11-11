@@ -135,7 +135,7 @@ private fun TextField.adicionarTooltip(valido: Boolean, descricao: String, msgEr
     //Configurando o Tooltip
     //Tive que criar um novo tooltip ao invés de só mudar o estilo (quando a msgErro deveria ser mostrada, porque a classe do css não estava alternando. BUG?
     val tooltip = Tooltip(descricao)
-    alterarDelayTime(tooltip)
+    tooltip.showDelay = Duration(200.0)
     setTooltip(tooltip)
     tooltip.text = if (valido) descricao else msgErro
     if (valido) {
@@ -144,26 +144,5 @@ private fun TextField.adicionarTooltip(valido: Boolean, descricao: String, msgEr
     } else {
         tooltip.text = msgErro
         tooltip.addClass(EstiloPrincipal.tooltipErro)
-    }
-}
-
-/**
- * Gambiarra para alterar o delay de surgimento da Tooltip, já que o JavaFX não fornece maneira mais fácil de fazer isso
- * Retirada em https://stackoverflow.com/questions/26854301/how-to-control-the-javafx-tooltips-delay
- */
-private fun alterarDelayTime(tooltip: Tooltip) {
-    try {
-        val fieldBehavior = tooltip.javaClass.getDeclaredField("BEHAVIOR")
-        fieldBehavior.isAccessible = true
-        val objBehavior = fieldBehavior.get(tooltip)
-
-        val fieldTimer = objBehavior.javaClass.getDeclaredField("activationTimer")
-        fieldTimer.isAccessible = true
-        val objTimer = fieldTimer.get(objBehavior) as Timeline
-
-        objTimer.keyFrames.clear()
-        objTimer.keyFrames.add(KeyFrame(Duration(100.0)))
-    } catch (e: Exception) {
-        e.printStackTrace()
     }
 }

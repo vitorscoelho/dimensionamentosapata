@@ -9,11 +9,14 @@ import java.util.Locale
 
 fun main(args: Array<String>) {
     Locale.setDefault(Locale.US)
-    Application.launch(MeuApp::class.java, *args)
+    Application.launch(Aplicacao::class.java, *args)
 }
 
-class MeuApp : App(ViewInicial::class, EstiloPrincipal::class) {
+class Aplicacao : App(ViewInicial::class, EstiloPrincipal::class) {
     init {
         reloadStylesheetsOnFocus()
+        val versaoJava = System.getProperty("java.version")
+        val versaoJavaFX = System.getProperty("javafx.version")
+        println("Versão Java: $versaoJava // Versão JavaFX: $versaoJavaFX")
     }
 }

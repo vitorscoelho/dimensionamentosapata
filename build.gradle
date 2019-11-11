@@ -1,16 +1,25 @@
 plugins {
-    id 'java'
+    id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.3.50'
+    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
 group 'vitorscoelho'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
-
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }
+}
+
+mainClassName = 'vitorscoelho.dimensionamentosapata.gui.MainKt'
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 dependencies {
@@ -21,6 +30,10 @@ dependencies {
 
     compile 'com.github.vitorscoelho:gyncanvas:master-SNAPSHOT'
 
+    runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:win"
+    runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:linux"
+    runtimeOnly "org.openjfx:javafx-graphics:$javafx.version:mac"
+
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
@@ -28,16 +41,14 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
-task fatJar(type: Jar) {
-    group 'build'
-    description 'Cria o jar da aplicação com todas as dependências'
-    manifest {
-        attributes 'Main-Class': "vitorscoelho.dimensionamentosapata.gui.MainKt"
-    }
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
-    with jar
+javafx {
+    version = "11"
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics']
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 compileKotlin {
