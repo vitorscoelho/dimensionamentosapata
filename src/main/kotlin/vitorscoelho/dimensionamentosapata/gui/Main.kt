@@ -4,11 +4,13 @@ import javafx.application.Application
 import tornadofx.*
 import vitorscoelho.dimensionamentosapata.gui.estilos.EstiloPrincipal
 import vitorscoelho.dimensionamentosapata.gui.views.ViewInicial
+import vitorscoelho.dimensionamentosapata.utils.inicializarUnidadesDeMedidaExtras
 import java.util.Locale
 
 
 fun main(args: Array<String>) {
     Locale.setDefault(Locale.US)
+    inicializarUnidadesDeMedidaExtras()
     Application.launch(Aplicacao::class.java, *args)
 }
 

@@ -1,17 +1,29 @@
 package vitorscoelho.dimensionamentosapata.gui.controllers
 
 import javafx.beans.property.SimpleStringProperty
+import tech.units.indriya.AbstractUnit
+import tech.units.indriya.format.SimpleUnitFormat
+import tech.units.indriya.quantity.Quantities
+import tech.units.indriya.unit.ProductUnit
+import tech.units.indriya.unit.Units.PERCENT
 import tornadofx.*
 import vitorscoelho.dimensionamentosapata.estadio2.*
-import vitorscoelho.dimensionamentosapata.gui.models.Dados
-import vitorscoelho.dimensionamentosapata.gui.models.DadosModel
+import vitorscoelho.dimensionamentosapata.gui.models.NovosDados
 import vitorscoelho.dimensionamentosapata.gui.views.*
 import vitorscoelho.dimensionamentosapata.gui.views.CanvasSapata
 import vitorscoelho.dimensionamentosapata.sapata.SapataRetangular
+import tech.units.indriya.unit.Units.RADIAN
+import vitorscoelho.dimensionamentosapata.sapata.ResultadosFlexaoSapata
+import vitorscoelho.dimensionamentosapata.utils.*
+import javax.measure.Quantity
+import javax.measure.Unit
+import javax.measure.quantity.Length
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 internal class ControllerInicial : Controller() {
-    val model: DadosModel = DadosModel(Dados())
+    //    val model: DadosModel = DadosModel(Dados())
+    val model: NovosDados = NovosDados()
     val canvasSapata = CanvasSapata(this)
     val textoResultadosProperty = SimpleStringProperty()
     var textoResultados by textoResultadosProperty
@@ -27,82 +39,57 @@ internal class ControllerInicial : Controller() {
     }
 
     fun dimensionar() {
-        with(model.item) {
-            model.commit()
-            val multiplicadorModuloReacao = 1 / 1000.0
-            val multiplicadorMomento = 100.0
-            val multiplicadorTensao = 1.0 / 10_000.0
-            val sapata = SapataRetangular(
-                lx = lx, ly = ly, moduloReacaoSolo = moduloReacaoSolo * multiplicadorModuloReacao
+        model.commit()
+        val lx = model.lxProperty.quantity.doublePadrao()
+        val ly = model.lyProperty.quantity.doublePadrao()
+        val moduloReacaoSolo = model.moduloReacaoSoloProperty.quantity.doublePadrao()
+
+        val ecgInicial = model.ecgInicialProperty.quantity.doublePadrao()
+        val curvaturaXInicial = model.curvaturaXInicialProperty.quantity.doublePadrao()
+        val curvaturaYInicial = model.curvaturaYInicialProperty.quantity.doublePadrao()
+
+        val qtdMaximaIteracoes = model.qtdMaximaIteracoesProperty.magnitude
+        val deltaNAdm = model.toleranciaNormalIteracaoProperty.quantity.doublePadrao()
+        val deltaMAdm = model.toleranciaMomentoIteracaoProperty.quantity.doublePadrao()
+
+        val normal = model.normalProperty.quantity.doublePadrao()
+        val momentoX = model.momentoXProperty.quantity.doublePadrao()
+        val momentoY = model.momentoYProperty.quantity.doublePadrao()
+
+        val sapata = SapataRetangular(
+            lx = lx, ly = ly, moduloReacaoSolo = moduloReacaoSolo
+        )
+        val criteriosProcessoIterativo = CriteriosProcessoIterativo(
+            deformadaInicial = Deformada.criar(
+                ponto = Ponto.ZERO,
+                deformacaoPonto = ecgInicial,
+                curvaturaX = curvaturaXInicial,
+                curvaturaY = curvaturaYInicial
+            ),
+            qtdMaximaIteracoes = qtdMaximaIteracoes,
+            deltaNAdm = deltaNAdm,
+            deltaMxAdm = deltaMAdm,
+            deltaMyAdm = deltaMAdm
+        )
+        val esforco = Esforco(
+            normal = normal,
+            momentoX = momentoX,
+            momentoY = momentoY
+        )
+
+        println(sapata)
+        println(criteriosProcessoIterativo)
+        println(esforco)
+
+        try {
+            val resultados = sapata.resultadosFlexao(
+                esforco = esforco, criteriosProcessoIterativo = criteriosProcessoIterativo
             )
-            val criteriosProcessoIterativo = CriteriosProcessoIterativo(
-                deformadaInicial = Deformada.criar(
-                    ponto = Ponto.ZERO,
-                    deformacaoPonto = ecgInicial,
-                    curvaturaX = curvaturaXInicial,
-                    curvaturaY = curvaturaYInicial
-                ),
-                qtdMaximaIteracoes = qtdMaximaIteracoes,
-                deltaNAdm = toleranciaIteracao,
-                deltaMxAdm = toleranciaIteracao * multiplicadorMomento,
-                deltaMyAdm = toleranciaIteracao * multiplicadorMomento
-            )
-            val esforco = Esforco(
-                normal = normal,
-                momentoX = momentoX * multiplicadorMomento,
-                momentoY = momentoY * multiplicadorMomento
-            )
-            println(sapata)
-            println(criteriosProcessoIterativo)
-            println(esforco)
-            try {
-                val resultados = sapata.resultadosFlexao(
-                    esforco = esforco, criteriosProcessoIterativo = criteriosProcessoIterativo
-                )
-                val deformacaoCG = resultados.deformacao(x = 0.0, y = 0.0)
-                val curvaturaX = resultados.deformada.curvaturaX
-                val curvaturaY = resultados.deformada.curvaturaY
-                val curvaturaResultante = sqrt(curvaturaX * curvaturaX + curvaturaY * curvaturaY)
-                val tensaoMinima = resultados.tensaoMinima / multiplicadorTensao
-                val tensaoMaxima = resultados.tensaoMaxima / multiplicadorTensao
-                val areaSapata = sapata.area
-                val moduloFlexaoXSapata = sapata.moduloFlexaoX
-                val moduloFlexaoYSapata = sapata.moduloFlexaoY
-                val areaComprimida = resultados.areaSecaoComprimida
-                val porcentagemAreaComprimida = 100.0 * areaComprimida / areaSapata
-                val normal = esforco.normal
-                val momentoX = esforco.momentoX / multiplicadorMomento
-                val momentoY = esforco.momentoY / multiplicadorMomento
-                textoResultados = run {
-                    val sb = StringBuilder()
-                    sb.append("- Resultados da análise\r\n")
-                    if (utilizarModuloReacaoSolo) {
-                        sb.append("   Δcg= ${dc2Casas.format(deformacaoCG)} cm\r\n")
-                        sb.append("   Φx= ${dcCientifica3Casas.format(curvaturaX)} rad\r\n")
-                        sb.append("   Φy= ${dcCientifica3Casas.format(curvaturaY)} rad\r\n")
-                        sb.append("   Φ= ${dcCientifica3Casas.format(curvaturaResultante)} rad\r\n")
-                    }
-                    sb.append("   σMín= ${dc2Casas.format(tensaoMinima)} kPa\r\n")
-                    sb.append("   σMáx= ${dc2Casas.format(tensaoMaxima)} kPa\r\n")
-                    sb.append("   Área comprimida= ${dc2Casas.format(areaComprimida)} cm²\r\n")
-                    sb.append("   Área comprimida= ${dc1Casa.format(porcentagemAreaComprimida)} %\r\n")
-                    sb.append("\r\n- Geometria da Sapata\r\n")
-                    sb.append("   Área= ${dc2Casas.format(areaSapata)} cm²\r\n")
-                    sb.append("   Wx= ${dc2Casas.format(moduloFlexaoXSapata)} cm³\r\n")
-                    sb.append("   Wy= ${dc2Casas.format(moduloFlexaoYSapata)} cm³\r\n")
-                    sb.append("\r\n- Esforços\r\n")
-                    sb.append("   N= ${dc2Casas.format(normal)} kN\r\n")
-                    sb.append("   Mx= ${dc2Casas.format(momentoX)} kN.m\r\n")
-                    sb.append("   My= ${dc2Casas.format(momentoY)} kN.m\r\n")
-                    sb.append("   ex= ${dc2Casas.format(100.0 * momentoY / normal)} cm\r\n")
-                    sb.append("   ey= ${dc2Casas.format(100.0 * momentoX / normal)} cm")
-                    sb.toString()
-                }
-                canvasSapata.resultados = resultados
-            } catch (e: ConvergenciaNaoAlcancadaException) {
-                limparResultados()
-                error(title = "Erro", header = "Impossível dimensionar!", content = e.message)
-            }
+            textoResultados = textoResultados(resultados, model)
+            canvasSapata.resultados = resultados
+        } catch (e: ConvergenciaNaoAlcancadaException) {
+            limparResultados()
+            error(title = "Erro", header = "Impossível dimensionar!", content = e.message)
         }
     }
 
@@ -110,4 +97,52 @@ internal class ControllerInicial : Controller() {
         canvasSapata.resultados = null
         textoResultados = ""
     }
+}
+
+fun textoResultados(resultados: ResultadosFlexaoSapata, m: NovosDados): String {
+    val deformacaoCG = transformLengthOfPadrao(resultados.deformacao(x = 0.0, y = 0.0), m.unitDeformacaoTranslacao)
+    val curvaturaX = transformAngleOfPadrao(resultados.deformada.curvaturaX, m.unitDeformacaoRotacao)
+    val curvaturaY = transformAngleOfPadrao(resultados.deformada.curvaturaY, m.unitDeformacaoRotacao)
+    val curvaturaResultante = transformAngleOfPadrao(
+        sqrt(resultados.deformada.curvaturaX.pow(2) + resultados.deformada.curvaturaY.pow(2)),
+        m.unitDeformacaoRotacao
+    )
+    val tensaoMinima = transformPressureOfPadrao(resultados.tensaoMinima, m.unitPressao)
+    val tensaoMaxima = transformPressureOfPadrao(resultados.tensaoMaxima, m.unitPressao)
+    val areaComprimida = transformAreaOfPadrao(resultados.areaSecaoComprimida, m.unitAreaSapata)
+    val proporcaoAreaComprimida = Quantities.getQuantity(
+        resultados.areaSecaoComprimida / resultados.sapata.area, AbstractUnit.ONE
+    ).to(PERCENT)
+    val areaSapata = transformAreaOfPadrao(resultados.sapata.area, m.unitAreaSapata)
+    val moduloFlexaoXSapata = transformVolumeOfPadrao(resultados.sapata.moduloFlexaoX, m.unitModuloFlexaoSapata)
+    val moduloFlexaoYSapata = transformVolumeOfPadrao(resultados.sapata.moduloFlexaoY, m.unitModuloFlexaoSapata)
+    val normal = transformForceOfPadrao(resultados.esforcoSolicitante.normal, m.unitForca)
+    val momentoX = transformMomentOfPadrao(resultados.esforcoSolicitante.momentoX, m.unitMomento)
+    val momentoY = transformMomentOfPadrao(resultados.esforcoSolicitante.momentoY, m.unitMomento)
+    val ex = momentoX.divide(normal).asType(Length::class.java).to(m.unitDimensoesFundacao)
+    val ey = momentoY.divide(normal).asType(Length::class.java).to(m.unitDimensoesFundacao)
+
+    return with(StringBuilder()) {
+        appendln("- Resultados da análise")
+        if (m.utilizarModuloReacaoSolo) {
+            appendln("   ${DELTA_MAIUSCULO}cg= ${deformacaoCG.toString(dc2Casas)}")
+            appendln("   ${PHI_MAIUSCULO}x= ${curvaturaX.toString(dcCientifica3Casas)}")
+            appendln("   ${PHI_MAIUSCULO}y= ${curvaturaY.toString(dcCientifica3Casas)}")
+            appendln("   ${PHI_MAIUSCULO}= ${curvaturaResultante.toString(dcCientifica3Casas)}")
+        }
+        appendln("   ${SIGMA_MINUSCULO}Mín= ${tensaoMinima.toString(dc2Casas)}")
+        appendln("   ${SIGMA_MINUSCULO}Máx= ${tensaoMaxima.toString(dc2Casas)}")
+        appendln("   Área comprimida= ${areaComprimida.toString(dc2Casas)}")
+        appendln("   Área comprimida= ${proporcaoAreaComprimida.toString(dc1Casa)}")
+        appendln("\r\n- Geometria da Sapata")
+        appendln("   Área= ${areaSapata.toString(dc2Casas)}")
+        appendln("   Wx= ${moduloFlexaoXSapata.toString(dc2Casas)}")
+        appendln("   Wy= ${moduloFlexaoYSapata.toString(dc2Casas)}")
+        appendln("\r\n- Esforços")
+        appendln("   N= ${normal.toString(dc2Casas)}")
+        appendln("   Mx= ${momentoX.toString(dc2Casas)}")
+        appendln("   My= ${momentoY.toString(dc2Casas)}")
+        appendln("   ex= ${ex.toString(dc2Casas)}")
+        appendln("   ey= ${ey.toString(dc2Casas)}")
+    }.toString()
 }

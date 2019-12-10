@@ -4,7 +4,10 @@ import vitorscoelho.dimensionamentosapata.estadio2.*
 import kotlin.math.max
 import kotlin.math.pow
 
-class ResultadosFlexaoSapata internal constructor(private val resultados: ResultadosFlexaoCompostaEstadio2) {
+class ResultadosFlexaoSapata internal constructor(
+    private val resultados: ResultadosFlexaoCompostaEstadio2,
+    val sapata: Sapata
+) {
     private val secaoComprimida: SecaoConcreto by lazy {
         SecaoConcreto(
             vertices = resultados.flexaoCompostaEstadio2.verticesSecaoComprimida(deformada = resultados.deformadaFinal),
@@ -27,7 +30,7 @@ class ResultadosFlexaoSapata internal constructor(private val resultados: Result
         get() = resultados.esforcoSolicitante
 
     val tensaoMaxima: Double by lazy {
-        val valor=verticesSapata.map { tensaoSolo(it.x, it.y) }.max()!!
+        val valor = verticesSapata.map { tensaoSolo(it.x, it.y) }.max()!!
         println(valor)
         valor
     }
@@ -63,7 +66,7 @@ abstract class Sapata(vertices: List<Ponto>, val moduloDeformacaoSolo: Double) {
             criteriosProcessoIterativo = criteriosProcessoIterativo
         )
         val resultadosFlexaoCompostaEstadio2 = flexaoCompostaEstadio2.resultados(esforco = esforco)
-        return ResultadosFlexaoSapata(resultadosFlexaoCompostaEstadio2)
+        return ResultadosFlexaoSapata(resultadosFlexaoCompostaEstadio2, this)
     }
 }
 

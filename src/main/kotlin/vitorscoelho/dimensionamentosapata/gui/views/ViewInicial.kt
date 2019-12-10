@@ -2,16 +2,23 @@ package vitorscoelho.dimensionamentosapata.gui.views
 
 import javafx.geometry.Orientation
 import javafx.scene.control.TextArea
+import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
+import tech.units.indriya.quantity.Quantities
+import tech.units.indriya.unit.Units.NEWTON
 import tornadofx.*
 import vitorscoelho.dimensionamentosapata.gui.controllers.ControllerInicial
 import vitorscoelho.dimensionamentosapata.gui.estilos.EstiloPrincipal
+import vitorscoelho.dimensionamentosapata.gui.models.Dados
 import vitorscoelho.dimensionamentosapata.gui.models.DadosModel
+import vitorscoelho.dimensionamentosapata.gui.models.NovosDados
+import vitorscoelho.dimensionamentosapata.utils.SpringStiffnessPerUnitArea
+import javax.measure.Quantity
 
 internal class ViewInicial : View("Verificação de tensões em sapatas rígidas retangulares") {
     private val controller: ControllerInicial by inject()
-    val model: DadosModel
+    val dadosQuantity: NovosDados
         get() = controller.model
     private val contextoDeValidacao = ContextoDeValidacao()
     //TODO fazer um programa que pegue vários esforços e, através de intervalos de dimensões e critérios aplicados pelo usuário, encontre qual é a sapata mais econômica que atenda as condições
@@ -20,119 +27,35 @@ internal class ViewInicial : View("Verificação de tensões em sapatas rígidas
         labelPosition = Orientation.VERTICAL
         hbox {
             vbox {
-                field("Δcg (cm)") {
-                    textfield {
-                        numeroReal(
-                            property = model.ecgInicial,
-                            descricao = "Deformação no centro de gravidade da seção adotada na primeira iteração\r\n(positiva quando comprime o solo)",
-                            contextoDeValidacao = contextoDeValidacao
-                        )
-                    }
-                }
-                field("Φx (rad)") {
-                    textfield {
-                        numeroReal(
-                            property = model.curvaturaXInicial,
-                            descricao = "Rotação em torno do eixo X na primeira iteração\r\n(positivo para o vetor apontando para a direita)",
-                            contextoDeValidacao = contextoDeValidacao
-                        )
-                    }
-                }
-                field("Φy (rad)") {
-                    textfield {
-                        numeroReal(
-                            property = model.curvaturaYInicial,
-                            descricao = "Rotação em torno do eixo Y na primeira iteração\r\n(positivo para o vetor apontando para a cima)",
-                            contextoDeValidacao = contextoDeValidacao
-                        )
-                    }
-                }
+                fieldQuantity(property = dadosQuantity.ecgInicialProperty)
+                fieldQuantity(property = dadosQuantity.curvaturaXInicialProperty)
+                fieldQuantity(property = dadosQuantity.curvaturaYInicialProperty)
             }
             vbox {
-                field("Qtd. máxima de iterações") {
-                    textfield {
-                        inteiroMaiorQueZero(
-                            property = model.qtdMaximaIteracoes,
-                            descricao = "Quantidade máxima permitida de iterações",
-                            contextoDeValidacao = contextoDeValidacao
-                        )
-                    }
-                }
-                field("Tolerância (kN ou kN.m)") {
-                    textfield {
-                        realMaiorQueZero(
-                            property = model.toleranciaIteracao,
-                            descricao = "Diferença admissível entre o esforço solicitante e o resistente\r\nEm kN para normal e kN.m para momento",
-                            contextoDeValidacao = contextoDeValidacao
-                        )
-                    }
-                }
+                fieldQuantity(property = dadosQuantity.qtdMaximaIteracoesProperty, permitirNegativo = false)
+                fieldQuantity(property = dadosQuantity.toleranciaNormalIteracaoProperty, permitirNegativo = false)
+                fieldQuantity(property = dadosQuantity.toleranciaMomentoIteracaoProperty, permitirNegativo = false)
             }
         }
     }
     private val fieldsetDadosSapata = fieldset("Dados da sapata") {
         labelPosition = Orientation.VERTICAL
-        field("Lx (cm)") {
-            val tf = textfield {
-                realMaiorQueZero(
-                    property = model.lx,
-                    descricao = "Comprimento da sapata em x",
-                    contextoDeValidacao = contextoDeValidacao
-                )
-            }
-        }
-        field("Ly (cm)") {
-            textfield {
-                realMaiorQueZero(
-                    property = model.ly,
-                    descricao = "Comprimento da sapata em y",
-                    contextoDeValidacao = contextoDeValidacao
-                )
-            }
-        }
-        field("Kr (MPa/m)") {
-            textfield {
-                realMaiorQueZero(
-                    property = model.moduloReacaoSolo,
-                    descricao = "Módulo de reação do solo",
-                    contextoDeValidacao = contextoDeValidacao
-                )
-                enableWhen(model.utilizarModuloReacaoSolo)
-            }
-            checkbox(property = model.utilizarModuloReacaoSolo) {
-                this.selectedProperty().onChange { model.moduloReacaoSolo.value = 1.0 }
+        fieldQuantity(property = dadosQuantity.lxProperty, permitirNegativo = false)
+        fieldQuantity(property = dadosQuantity.lyProperty, permitirNegativo = false)
+        fieldQuantity(property = dadosQuantity.moduloReacaoSoloProperty, permitirNegativo = false) { tf: TextField ->
+            tf.enableWhen(dadosQuantity.utilizarModuloReacaoSoloProperty)
+            checkbox(property = dadosQuantity.utilizarModuloReacaoSoloProperty) {
+                this.selectedProperty().onChange {
+                    dadosQuantity.moduloReacaoSoloProperty.magnitude = 1.0
+                }
             }
         }
     }
     private val fieldsetDadosEsforcos = fieldset("Esforços solicitantes") {
         labelPosition = Orientation.VERTICAL
-        field("N (kN)") {
-            textfield {
-                numeroReal(
-                    property = model.normal,
-                    descricao = "Esforço normal solicitante\r\n(positivo quando compressão)",
-                    contextoDeValidacao = contextoDeValidacao
-                )
-            }
-        }
-        field("Mx (kN.m)") {
-            textfield {
-                numeroReal(
-                    property = model.momentoX,
-                    descricao = "Momento fletor solicitante em torno do eixo X\r\n(positivo para o vetor apontando para a direita)",
-                    contextoDeValidacao = contextoDeValidacao
-                )
-            }
-        }
-        field("My (kN.m)") {
-            textfield {
-                numeroReal(
-                    property = model.momentoY,
-                    descricao = "Momento fletor solicitante em torno do eixo Y\r\n(positivo para o vetor apontando para a cima)",
-                    contextoDeValidacao = contextoDeValidacao
-                )
-            }
-        }
+        fieldQuantity(property = dadosQuantity.normalProperty)
+        fieldQuantity(property = dadosQuantity.momentoXProperty)
+        fieldQuantity(property = dadosQuantity.momentoYProperty)
     }
 
     private val formDados = form {
@@ -157,7 +80,7 @@ internal class ViewInicial : View("Verificação de tensões em sapatas rígidas
                 }
                 button("Dimensionar") {
                     action { controller.dimensionar() }
-                    enableWhen { model.dirty.and(contextoDeValidacao.invalidProperty.not()) }
+//                    enableWhen { dadosQuantity.dirty.and(contextoDeValidacao.invalidProperty.not()) }
                 }
                 textarea(controller.textoResultadosProperty) {
                     configurarTextAreaResultados(this)
