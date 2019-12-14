@@ -1,103 +1,57 @@
 package vitorscoelho.dimensionamentosapata.gui.views
 
-import javafx.geometry.Orientation
 import javafx.scene.control.TextArea
-import javafx.scene.control.TextField
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import tech.units.indriya.quantity.Quantities
-import tech.units.indriya.unit.Units.NEWTON
+import tech.units.indriya.unit.Units.METRE
 import tornadofx.*
 import vitorscoelho.dimensionamentosapata.gui.controllers.ControllerInicial
-import vitorscoelho.dimensionamentosapata.gui.estilos.EstiloPrincipal
-import vitorscoelho.dimensionamentosapata.gui.models.Dados
-import vitorscoelho.dimensionamentosapata.gui.models.DadosModel
-import vitorscoelho.dimensionamentosapata.gui.models.NovosDados
-import vitorscoelho.dimensionamentosapata.utils.SpringStiffnessPerUnitArea
-import javax.measure.Quantity
+import vitorscoelho.dimensionamentosapata.gui.models.*
+import vitorscoelho.dimensionamentosapata.gui.utils.TipoInput
+import vitorscoelho.dimensionamentosapata.gui.utils.fieldNumber
+import vitorscoelho.dimensionamentosapata.gui.utils.fieldQuantity
 
-internal class ViewInicial : View("Verificação de tensões em sapatas rígidas retangulares") {
+internal class ViewInicial : View() {
     private val controller: ControllerInicial by inject()
-    val dadosQuantity: NovosDados
-        get() = controller.model
-    private val contextoDeValidacao = ContextoDeValidacao()
-    //TODO fazer um programa que pegue vários esforços e, através de intervalos de dimensões e critérios aplicados pelo usuário, encontre qual é a sapata mais econômica que atenda as condições
+    val processoIterativo = BeanProcessoIterativo()
+    val esforcosDeformacoes = BeanEsforcosDeformacoes()
+    val sapata = SapataRetangularModel(BeanSapataRetangular())
+//    private val processoIterativo: ProcessoIterativoModel
+//        get() = controller.processoIterativo
+//    private val esforcosDeformacoes: BeanEsforcosDeformacoes
+//        get() = controller.esforcosDeformacoes
+//    private val sapata: BeanSapataRetangular
+//        get() = controller.sapata
 
-    private val fieldsetDadosProcessoIterativo = fieldset("Processo iterativo") {
-        labelPosition = Orientation.VERTICAL
-        hbox {
-            vbox {
-                fieldQuantity(property = dadosQuantity.ecgInicialProperty)
-                fieldQuantity(property = dadosQuantity.curvaturaXInicialProperty)
-                fieldQuantity(property = dadosQuantity.curvaturaYInicialProperty)
-            }
-            vbox {
-                fieldQuantity(property = dadosQuantity.qtdMaximaIteracoesProperty, permitirNegativo = false)
-                fieldQuantity(property = dadosQuantity.toleranciaNormalIteracaoProperty, permitirNegativo = false)
-                fieldQuantity(property = dadosQuantity.toleranciaMomentoIteracaoProperty, permitirNegativo = false)
-            }
+    override val root = form {
+        fieldset(text = messages["fieldsetProcessoIterativo"]) {
+            //            fieldQuantity(property = processoIterativo.ecgInicialProperty)
+//            fieldQuantity(property = processoIterativo.curvaturaXInicialProperty)
+//            fieldQuantity(property = processoIterativo.curvaturaYInicialProperty)
+//            fieldNumber(property = processoIterativo.qtdMaximaIteracoesProperty)
+//            fieldQuantity(property = processoIterativo.toleranciaIteracaoNormalProperty)
+//            fieldQuantity(property = processoIterativo.toleranciaIteracaoMomento)
         }
-    }
-    private val fieldsetDadosSapata = fieldset("Dados da sapata") {
-        labelPosition = Orientation.VERTICAL
-        fieldQuantity(property = dadosQuantity.lxProperty, permitirNegativo = false)
-        fieldQuantity(property = dadosQuantity.lyProperty, permitirNegativo = false)
-        fieldQuantity(property = dadosQuantity.moduloReacaoSoloProperty, permitirNegativo = false) { tf: TextField ->
-            tf.enableWhen(dadosQuantity.utilizarModuloReacaoSoloProperty)
-            checkbox(property = dadosQuantity.utilizarModuloReacaoSoloProperty) {
-                this.selectedProperty().onChange {
-                    dadosQuantity.moduloReacaoSoloProperty.magnitude = 1.0
-                }
-            }
+//        fieldset(text = messages["fieldsetEsforcosSolicitantes"]) {
+//            fieldQuantity(property = esforcosDeformacoes.normalProperty)
+//            fieldQuantity(property = esforcosDeformacoes.momentoXProperty)
+//            fieldQuantity(property = esforcosDeformacoes.momentoYProperty)
+//        }
+        fieldset(text = messages["fieldsetDadosSapata"]) {
+            //            fieldQuantity(property = esforcosDeformacoes.moduloReacaoSoloProperty)
+//            fieldQuantity(property = sapata.lx)
+            fieldQuantity(property = sapata.ly)
         }
-    }
-    private val fieldsetDadosEsforcos = fieldset("Esforços solicitantes") {
-        labelPosition = Orientation.VERTICAL
-        fieldQuantity(property = dadosQuantity.normalProperty)
-        fieldQuantity(property = dadosQuantity.momentoXProperty)
-        fieldQuantity(property = dadosQuantity.momentoYProperty)
-    }
+        button("Mudar") {
+            //            action { processoIterativo.ecgInicialProperty.value = Quantities.getQuantity(10.0, METRE) }
 
-    private val formDados = form {
-        hbox {
-            add(fieldsetDadosProcessoIterativo)
-            add(fieldsetDadosSapata)
-            add(fieldsetDadosEsforcos)
+            enableWhen { processoIterativo.dirty }
         }
     }
 
-    override val root = hbox {
-        setPrefSize(1300.0, 600.0)
-        hbox {
-            vbox {
-                addClass(EstiloPrincipal.vboxDados)
-                form {
-                    add(fieldsetDadosProcessoIterativo)
-                    hbox {
-                        add(fieldsetDadosSapata)
-                        add(fieldsetDadosEsforcos)
-                    }
-                }
-                button("Dimensionar") {
-                    action { controller.dimensionar() }
-//                    enableWhen { dadosQuantity.dirty.and(contextoDeValidacao.invalidProperty.not()) }
-                }
-                textarea(controller.textoResultadosProperty) {
-                    configurarTextAreaResultados(this)
-                    isEditable = false
-                }
-            }
-        }
-        vbox {
-            addClass(EstiloPrincipal.vboxCanvas)
-            configurarVboxCanvas(this)
-            add(controller.canvasSapata.node)
-            label(controller.textoXMouseProperty)
-            label(controller.textoYMouseProperty)
-            label(controller.textoTensaoProperty)
-            label(controller.textoDeformacaoProperty)
-            label(controller.textoLegendaDesenhoProperty)
-        }
+    init {
+        title = messages["tituloJanela"]
     }
 }
 

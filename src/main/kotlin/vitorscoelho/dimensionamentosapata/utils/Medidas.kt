@@ -108,6 +108,10 @@ fun pressureOf(value: Number, unit: Unit<Pressure>): Quantity<Pressure> = getQua
 fun angleOf(value: Number, unit: Unit<Angle>): Quantity<Angle> = getQuantity(value, unit)
 fun areaOf(value: Number, unit: Unit<Area>): Quantity<Area> = getQuantity(value, unit)
 fun volumeOf(value: Number, unit: Unit<Volume>): Quantity<Volume> = getQuantity(value, unit)
+fun springStiffnessPerUnitArea(
+    value: Number,
+    unit: Unit<SpringStiffnessPerUnitArea>
+): Quantity<SpringStiffnessPerUnitArea> = getQuantity(value, unit)
 
 fun lengthOfPadrao(value: Number): Quantity<Length> = lengthOf(value, UNIT_PADRAO_LENGTH)
 fun pressureOfPadrao(value: Number): Quantity<Pressure> = pressureOf(value, UNIT_PADRAO_PRESSURE)
