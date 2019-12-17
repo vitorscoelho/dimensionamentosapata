@@ -9,6 +9,15 @@ import tornadofx.isInt
 import javax.measure.Quantity
 
 enum class TipoInput {
+    //    QUALQUER {
+//        override fun filterInput(formatter: TextFormatter.Change): Boolean = true
+//        override val converter = stringConverterString
+//        override fun <T : Quantity<T>> converter(property: Property<Quantity<T>>): StringConverter<Quantity<T>> {
+//            throw IllegalArgumentException("Este tipo de input não pode ser utilizado em campos que usem |Quantity|")
+//        }
+//
+//        override fun valid(text: String): Boolean = true
+//    },
     INTEIRO {
         override fun filterInput(formatter: TextFormatter.Change): Boolean {
             return formatter.controlNewText.isInt() || formatter.controlNewText == "-"
@@ -17,6 +26,9 @@ enum class TipoInput {
         override val converter = stringConverterInt
         override fun <T : Quantity<T>> converter(property: Property<Quantity<T>>): StringConverter<Quantity<T>> =
             stringConverterQuantity(property = property, converterNumber = stringConverterInt)
+
+        override fun valid(text: String): Boolean = text.isInt()
+        override val mensagemDeErro = "Deve ser um número inteiro"
     },
     INTEIRO_POSITIVO {
         override fun filterInput(formatter: TextFormatter.Change): Boolean {
@@ -26,6 +38,9 @@ enum class TipoInput {
         override val converter = stringConverterInt
         override fun <T : Quantity<T>> converter(property: Property<Quantity<T>>): StringConverter<Quantity<T>> =
             stringConverterQuantity(property = property, converterNumber = stringConverterInt)
+
+        override fun valid(text: String): Boolean = (text.isInt()) && (text.toInt() > 0)
+        override val mensagemDeErro ="Deve ser um inteiro maior que zero"
     },
     REAL {
         override fun filterInput(formatter: TextFormatter.Change): Boolean {
@@ -38,6 +53,9 @@ enum class TipoInput {
         override val converter = stringConverterDouble
         override fun <T : Quantity<T>> converter(property: Property<Quantity<T>>): StringConverter<Quantity<T>> =
             stringConverterQuantity(property = property, converterNumber = stringConverterDouble)
+
+        override fun valid(text: String): Boolean = text.isDouble()
+        override val mensagemDeErro ="Deve ser um número real"
     },
     REAL_POSITIVO {
         override fun filterInput(formatter: TextFormatter.Change): Boolean {
@@ -49,11 +67,16 @@ enum class TipoInput {
         override val converter = stringConverterDouble
         override fun <T : Quantity<T>> converter(property: Property<Quantity<T>>): StringConverter<Quantity<T>> =
             stringConverterQuantity(property = property, converterNumber = stringConverterDouble)
+
+        override fun valid(text: String): Boolean = (text.isDouble()) && (text.toDouble() > 0.0)
+        override val mensagemDeErro ="Deve ser um número real maior que zero"
     };
 
     abstract fun filterInput(formatter: TextFormatter.Change): Boolean
     abstract val converter: StringConverter<Number>
     abstract fun <T : Quantity<T>> converter(property: Property<Quantity<T>>): StringConverter<Quantity<T>>
+    abstract fun valid(text: String): Boolean
+    abstract val mensagemDeErro: String
 }
 
 private fun <T : Quantity<T>> stringConverterQuantity(
@@ -66,6 +89,12 @@ private fun <T : Quantity<T>> stringConverterQuantity(
         val magnitude = converterNumber.fromString(string)
         return Quantities.getQuantity(magnitude, property.value.unit)
     }
+}
+
+private val stringConverterString: StringConverter<String> = object : StringConverter<String>() {
+    override fun toString(valor: String?): String? = valor
+
+    override fun fromString(string: String?): String? = string
 }
 
 private val stringConverterDouble: StringConverter<Number> = object : StringConverter<Number>() {

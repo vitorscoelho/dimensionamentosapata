@@ -1,13 +1,9 @@
 package vitorscoelho.dimensionamentosapata.gui.models
 
-import javafx.beans.property.Property
-import tornadofx.BindingAwareSimpleObjectProperty
-import tornadofx.ItemViewModel
+import tornadofx.*
 import javax.measure.Quantity
 import javax.measure.quantity.Length
-import tornadofx.getValue
-import tornadofx.setValue
-import vitorscoelho.dimensionamentosapata.gui.descricoes
+import vitorscoelho.dimensionamentosapata.gui.utils.textos
 import vitorscoelho.dimensionamentosapata.gui.utils.InputObjectProperty
 import vitorscoelho.dimensionamentosapata.gui.utils.TipoInput
 import vitorscoelho.dimensionamentosapata.utils.CENTIMETRO
@@ -22,19 +18,13 @@ class BeanSapataRetangular {
     init {
         lxProperty.apply {
             value = lengthOf(0.0, CENTIMETRO)
-            setNomeDescricao("sapataRetangular.lx", descricoes)
+            setNomeDescricao("sapataRetangular.lx", textos)
             tipoInput = TipoInput.REAL_POSITIVO
         }
         lyProperty.apply {
             value = lengthOf(0.0, CENTIMETRO)
-            setNomeDescricao("sapataRetangular.ly", descricoes)
+            setNomeDescricao("sapataRetangular.ly", textos)
             tipoInput = TipoInput.REAL_POSITIVO
         }
     }
-}
-
-class SapataRetangularModel(initialValue: BeanSapataRetangular) :
-    ItemViewModel<BeanSapataRetangular>(initialValue = BeanSapataRetangular()) {
-    val ly: BindingAwareSimpleObjectProperty<Quantity<Length>> = bind(BeanSapataRetangular::lyProperty)
-    val lx = bind(BeanSapataRetangular::lxProperty)
 }

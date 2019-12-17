@@ -7,7 +7,7 @@ import javax.measure.Quantity
 import javax.measure.quantity.Angle
 import javax.measure.quantity.Force
 import javax.measure.quantity.Length
-import vitorscoelho.dimensionamentosapata.gui.descricoes
+import vitorscoelho.dimensionamentosapata.gui.utils.textos
 import vitorscoelho.dimensionamentosapata.gui.utils.InputIntegerProperty
 import vitorscoelho.dimensionamentosapata.gui.utils.InputObjectProperty
 import vitorscoelho.dimensionamentosapata.gui.utils.TipoInput
@@ -30,39 +30,33 @@ class BeanProcessoIterativo : ViewModel() {
     init {
         ecgInicialProperty.apply {
             value = lengthOf(1.0 / 100.0, CENTIMETRO)
-            setNomeDescricao("ecgInicial", descricoes)
+            setNomeDescricao("ecgInicial", textos)
+            tipoInput = TipoInput.REAL
         }
         curvaturaXInicialProperty.apply {
             value = angleOf(0.0, RADIAN)
-            setNomeDescricao("curvaturaXInicial", descricoes)
+            setNomeDescricao("curvaturaXInicial", textos)
+            tipoInput = TipoInput.REAL
         }
         curvaturaYInicialProperty.apply {
             value = angleOf(0.0, RADIAN)
-            setNomeDescricao("curvaturaYInicial", descricoes)
+            setNomeDescricao("curvaturaYInicial", textos)
+            tipoInput = TipoInput.REAL
         }
         qtdMaximaIteracoesProperty.apply {
             value = 100
-            setNomeDescricao("qtdMaximaIteracoes", descricoes)
+            setNomeDescricao("qtdMaximaIteracoes", textos)
+            tipoInput = TipoInput.INTEIRO_POSITIVO
         }
         toleranciaIteracaoNormalProperty.apply {
             value = forceOf(0.001, QUILONEWTON)
-            setNomeDescricao("toleranciaIteracaoNormal", descricoes)
+            setNomeDescricao("toleranciaIteracaoNormal", textos)
             tipoInput = TipoInput.REAL_POSITIVO
         }
         toleranciaIteracaoMomentoProperty.apply {
             value = momentOf(0.001, QUILONEWTON.multiply(METRE).asType(Moment::class.java))
-            setNomeDescricao("toleranciaIteracaoMomento", descricoes)
+            setNomeDescricao("toleranciaIteracaoMomento", textos)
             tipoInput = TipoInput.REAL_POSITIVO
         }
     }
-}
-
-class ProcessoIterativoModel(initialValue: BeanProcessoIterativo) :
-    ItemViewModel<BeanProcessoIterativo>(initialValue = initialValue) {
-    val toleranciaIteracaoMomento = bind(BeanProcessoIterativo::toleranciaIteracaoMomentoProperty)
-    val toleranciaIteracaoNormal = bind(BeanProcessoIterativo::toleranciaIteracaoNormalProperty)
-    val qtdMaximaIteracoes = bind(BeanProcessoIterativo::qtdMaximaIteracoesProperty)
-    val curvaturaYInicial = bind(BeanProcessoIterativo::curvaturaYInicialProperty)
-    val curvaturaXInicial = bind(BeanProcessoIterativo::curvaturaXInicialProperty)
-    val ecgInicial = bind(BeanProcessoIterativo::ecgInicialProperty)
 }

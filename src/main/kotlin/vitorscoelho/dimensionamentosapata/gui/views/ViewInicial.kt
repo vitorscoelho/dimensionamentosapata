@@ -1,57 +1,84 @@
 package vitorscoelho.dimensionamentosapata.gui.views
 
+import javafx.geometry.Orientation
 import javafx.scene.control.TextArea
 import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
-import tech.units.indriya.quantity.Quantities
-import tech.units.indriya.unit.Units.METRE
 import tornadofx.*
 import vitorscoelho.dimensionamentosapata.gui.controllers.ControllerInicial
+import vitorscoelho.dimensionamentosapata.gui.estilos.EstiloPrincipal
 import vitorscoelho.dimensionamentosapata.gui.models.*
-import vitorscoelho.dimensionamentosapata.gui.utils.TipoInput
+import vitorscoelho.dimensionamentosapata.gui.utils.PropertiesContext
+import vitorscoelho.dimensionamentosapata.gui.utils.textos
 import vitorscoelho.dimensionamentosapata.gui.utils.fieldNumber
 import vitorscoelho.dimensionamentosapata.gui.utils.fieldQuantity
 
 internal class ViewInicial : View() {
     private val controller: ControllerInicial by inject()
-    val processoIterativo = BeanProcessoIterativo()
-    val esforcosDeformacoes = BeanEsforcosDeformacoes()
-    val sapata = SapataRetangularModel(BeanSapataRetangular())
-//    private val processoIterativo: ProcessoIterativoModel
-//        get() = controller.processoIterativo
-//    private val esforcosDeformacoes: BeanEsforcosDeformacoes
-//        get() = controller.esforcosDeformacoes
-//    private val sapata: BeanSapataRetangular
-//        get() = controller.sapata
+    private val context: PropertiesContext
+        get() = controller.context
+    private val processoIterativo: BeanProcessoIterativo
+        get() = controller.processoIterativo
+    private val esforcosDeformacoes: BeanEsforcosDeformacoes
+        get() = controller.esforcosDeformacoes
+    private val sapata: BeanSapataRetangular
+        get() = controller.sapata
 
-    override val root = form {
-        fieldset(text = messages["fieldsetProcessoIterativo"]) {
-            //            fieldQuantity(property = processoIterativo.ecgInicialProperty)
-//            fieldQuantity(property = processoIterativo.curvaturaXInicialProperty)
-//            fieldQuantity(property = processoIterativo.curvaturaYInicialProperty)
-//            fieldNumber(property = processoIterativo.qtdMaximaIteracoesProperty)
-//            fieldQuantity(property = processoIterativo.toleranciaIteracaoNormalProperty)
-//            fieldQuantity(property = processoIterativo.toleranciaIteracaoMomento)
+    private val fieldsetProcessoIterativo = fieldset(text = textos["fieldsetProcessoIterativo"]) {
+        hbox {
+            labelPosition = Orientation.VERTICAL
+            vbox {
+                fieldQuantity(property = processoIterativo.ecgInicialProperty, context = context)
+                fieldQuantity(property = processoIterativo.curvaturaXInicialProperty, context = context)
+                fieldQuantity(property = processoIterativo.curvaturaYInicialProperty, context = context)
+            }
+            vbox {
+                fieldNumber(property = processoIterativo.qtdMaximaIteracoesProperty, context = context)
+                fieldQuantity(property = processoIterativo.toleranciaIteracaoNormalProperty, context = context)
+                fieldQuantity(property = processoIterativo.toleranciaIteracaoMomentoProperty, context = context)
+            }
         }
-//        fieldset(text = messages["fieldsetEsforcosSolicitantes"]) {
-//            fieldQuantity(property = esforcosDeformacoes.normalProperty)
-//            fieldQuantity(property = esforcosDeformacoes.momentoXProperty)
-//            fieldQuantity(property = esforcosDeformacoes.momentoYProperty)
-//        }
-        fieldset(text = messages["fieldsetDadosSapata"]) {
-            //            fieldQuantity(property = esforcosDeformacoes.moduloReacaoSoloProperty)
-//            fieldQuantity(property = sapata.lx)
-            fieldQuantity(property = sapata.ly)
-        }
-        button("Mudar") {
-            //            action { processoIterativo.ecgInicialProperty.value = Quantities.getQuantity(10.0, METRE) }
+    }
 
-            enableWhen { processoIterativo.dirty }
+    private val fieldsetEsforcos = fieldset(text = textos["fieldsetEsforcosSolicitantes"]) {
+        labelPosition = Orientation.VERTICAL
+        fieldQuantity(property = esforcosDeformacoes.normalProperty, context = context)
+        fieldQuantity(property = esforcosDeformacoes.momentoXProperty, context = context)
+        fieldQuantity(property = esforcosDeformacoes.momentoYProperty, context = context)
+    }
+
+    private val fieldsetSapata = fieldset(text = textos["fieldsetDadosSapata"]) {
+        labelPosition = Orientation.VERTICAL
+        fieldQuantity(property = esforcosDeformacoes.moduloReacaoSoloProperty, context = context)
+        fieldQuantity(property = sapata.lxProperty, context = context)
+        fieldQuantity(property = sapata.lyProperty, context = context)
+    }
+
+    private val formDados = form {
+        add(fieldsetProcessoIterativo)
+        hbox {
+            add(fieldsetEsforcos)
+            add(fieldsetSapata)
+        }
+    }
+    override val root = hbox {
+        setPrefSize(1300.0, 600.0)
+        vbox {
+            addClass(EstiloPrincipal.vboxDados)
+            add(formDados)
+            button(textos["botaoDimensionar"]) {
+                action { controller.dimensionar() }
+                enableWhen { controller.context.dirtyAndValid }
+            }
+            textarea(controller.textoResultadosProperty) {
+                configurarTextAreaResultados(this)
+                isEditable = false
+            }
         }
     }
 
     init {
-        title = messages["tituloJanela"]
+        title = textos["tituloJanela"]
     }
 }
 

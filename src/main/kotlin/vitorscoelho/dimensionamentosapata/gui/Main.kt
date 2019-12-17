@@ -11,7 +11,6 @@ import java.util.*
 fun main(args: Array<String>) {
     Locale.setDefault(Locale.US)
     FX.locale= Locale("en","US")
-//    ResourceBundle.getBundle("ViewInicial")
     inicializarUnidadesDeMedidaExtras()
     Application.launch(Aplicacao::class.java, *args)
 }

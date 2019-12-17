@@ -1,14 +1,12 @@
 package vitorscoelho.dimensionamentosapata.gui.models
 
-import javafx.beans.binding.BooleanBinding
-import javafx.beans.property.Property
 import tech.units.indriya.unit.Units
 import tech.units.indriya.unit.Units.METRE
-import tornadofx.ItemViewModel
 import tornadofx.getValue
 import tornadofx.setValue
-import vitorscoelho.dimensionamentosapata.gui.descricoes
+import vitorscoelho.dimensionamentosapata.gui.utils.textos
 import vitorscoelho.dimensionamentosapata.gui.utils.InputObjectProperty
+import vitorscoelho.dimensionamentosapata.gui.utils.TipoInput
 import vitorscoelho.dimensionamentosapata.utils.*
 import javax.measure.Quantity
 import javax.measure.quantity.Force
@@ -23,36 +21,28 @@ class BeanEsforcosDeformacoes {
     val moduloReacaoSoloProperty = InputObjectProperty<Quantity<SpringStiffnessPerUnitArea>>()
     var moduloReacaoSolo by moduloReacaoSoloProperty
 
-    private val itemViewModel: EsforcosDeformacoesModel by lazy { EsforcosDeformacoesModel(initialValue = this) }
-    val sujo: BooleanBinding
-        get() = itemViewModel.dirty
-
     init {
         normalProperty.apply {
             value = forceOf(0.0, QUILONEWTON)
-            setNomeDescricao("normal", descricoes)
+            setNomeDescricao("normal", textos)
+            tipoInput = TipoInput.REAL
         }
         momentoXProperty.apply {
             value = momentOf(0.0, QUILONEWTON.multiply(Units.METRE).asType(Moment::class.java))
-            setNomeDescricao("momentoX", descricoes)
+            setNomeDescricao("momentoX", textos)
+            tipoInput = TipoInput.REAL
         }
         momentoYProperty.apply {
             value = momentOf(0.0, QUILONEWTON.multiply(Units.METRE).asType(Moment::class.java))
-            setNomeDescricao("momentoY", descricoes)
+            setNomeDescricao("momentoY", textos)
+            tipoInput = TipoInput.REAL
         }
         moduloReacaoSoloProperty.apply {
             value = springStiffnessPerUnitArea(
                 1.0, MEGAPASCAL.divide(METRE).asType(SpringStiffnessPerUnitArea::class.java)
             )
-            setNomeDescricao("moduloReacaoSolo", descricoes)
+            setNomeDescricao("moduloReacaoSolo", textos)
+            tipoInput = TipoInput.REAL_POSITIVO
         }
     }
-}
-
-class EsforcosDeformacoesModel(initialValue: BeanEsforcosDeformacoes) :
-    ItemViewModel<BeanEsforcosDeformacoes>(initialValue = initialValue) {
-    val momentoY: Property<Quantity<Moment>> = bind(BeanEsforcosDeformacoes::momentoYProperty)
-    val momentoX = bind(BeanEsforcosDeformacoes::momentoXProperty)
-    val normal = bind(BeanEsforcosDeformacoes::normalProperty)
-    val moduloReacaoSolo = bind(BeanEsforcosDeformacoes::moduloReacaoSoloProperty)
 }
